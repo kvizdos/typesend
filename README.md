@@ -1,3 +1,6 @@
+> [!CAUTION]
+> This project is not complete yet. It's highly bare bones as of now :)
+
 # TypeSend
 
 TypeSend is a centralized email template management and sending service for developers. It handles email templates, offers a pre-built UI for modifying emails (and unsubscribing with one click), and tracks send history, open rates, click rates, and more. Rather than rebuilding email handling for every app, you simply drop in TypeSend and start sending emails via SendGrid (or later, SES, and other providers).
