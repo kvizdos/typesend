@@ -2,6 +2,8 @@
 
 TypeSend is a centralized email template management and sending service for developers. It handles email templates, offers a pre-built UI for modifying emails (and unsubscribing with one click), and tracks send history, open rates, click rates, and more. Rather than rebuilding email handling for every app, you simply drop in TypeSend and start sending emails via SendGrid (or later, SES, and other providers).
 
+[![Go Test](https://github.com/kvizdos/typesend/actions/workflows/test.yaml/badge.svg)](https://github.com/kvizdos/typesend/actions/workflows/test.yaml)
+
 ## Features
 ### Centralized Template Management:
 Store and manage email templates in MongoDB with a pre-built, embeddable Template Editor UI that displays all possible variables and provides live previews.
