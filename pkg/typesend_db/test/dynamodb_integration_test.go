@@ -21,7 +21,9 @@ func TestIntegration_Insert(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	client, container, err := testutils.SetupDynamoDBLocalSession(context.Background())
-	assert.NoError(t, err, "DynamoDB Setup Should Not Return Error")
+	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
+		return
+	}
 	defer testutils.KillContainer(container)
 
 	db, err := typesend_db.NewDynamoDB(context.Background(), &typesend_db.DynamoConfig{
@@ -58,7 +60,9 @@ func TestIntegration_GetMessagesReadyToSend(t *testing.T) {
 
 	// Setup DynamoDB Local session using our testutils helper.
 	client, container, err := testutils.SetupDynamoDBLocalSession(ctx)
-	assert.NoError(t, err, "DynamoDB Setup should not return error")
+	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
+		return
+	}
 	defer testutils.KillContainer(container)
 
 	// Use ForceClient to pass in our local DynamoDB session.
@@ -156,7 +160,9 @@ func TestIntegration_UpdateEnvelopeStatus(t *testing.T) {
 
 	// Setup DynamoDB Local session using our testutils helper.
 	client, container, err := testutils.SetupDynamoDBLocalSession(ctx)
-	assert.NoError(t, err, "DynamoDB Setup should not return error")
+	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
+		return
+	}
 	defer testutils.KillContainer(container)
 
 	// Create our DynamoDB wrapper with ForceClient to use the local session.

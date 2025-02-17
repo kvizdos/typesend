@@ -18,7 +18,7 @@ func SetupDynamoDBLocalSession(ctx context.Context) (*dynamodb.DynamoDB, testcon
 	req := testcontainers.ContainerRequest{
 		Image:        "amazon/dynamodb-local", // Official DynamoDB Local image.
 		ExposedPorts: []string{"8000/tcp"},
-		WaitingFor:   wait.ForLog("Initializing DynamoDB Local"),
+		WaitingFor:   wait.ForListeningPort("8000"),
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{

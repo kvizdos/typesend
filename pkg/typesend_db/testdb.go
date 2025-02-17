@@ -58,6 +58,11 @@ func (db *TestDatabase) GetMessagesReadyToSend(ctx context.Context, timestamp ti
 	ch := make(chan *typesend_schemas.TypeSendEnvelope)
 	go func() {
 		defer close(ch)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		for _, envelope := range db.Items() {
 			if envelope.Status == typesend_schemas.TypeSendStatus_UNSENT && !envelope.ScheduledFor.After(timestamp) {
 				select {
