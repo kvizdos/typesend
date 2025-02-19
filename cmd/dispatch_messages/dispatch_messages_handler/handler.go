@@ -45,7 +45,7 @@ type DispatchMessagesLambda struct {
 
 // Setup performs all initialization tasks during the cold start.
 // It creates any missing dependencies using the configuration parameters.
-func (dml *DispatchMessagesLambda) Setup(ctx context.Context) error {
+func (dml *DispatchMessagesLambda) Setup() error {
 	// Ensure dependency container exists.
 	if dml.Deps == nil {
 		dml.Deps = &DispatchMessagesDependencies{
@@ -96,7 +96,7 @@ func (dml *DispatchMessagesLambda) Setup(ctx context.Context) error {
 
 	// Connect to DynamoDB.
 	if dml.Deps.DB == nil {
-		dynamoCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		dynamoCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		dynamo, err := typesend_db.NewDynamoDB(dynamoCtx, &typesend_db.DynamoConfig{
 			Region:      dml.AWSRegion,

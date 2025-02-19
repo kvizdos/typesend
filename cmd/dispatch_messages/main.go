@@ -13,5 +13,6 @@ func main() {
 		Project:   os.Getenv("TYPESEND_PROJECT"),
 		Env:       os.Getenv("ENV"),
 	}
+	handler.Setup()
 	lambda.Start(handler.HandleRequest)
 }
