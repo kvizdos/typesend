@@ -24,19 +24,39 @@ func DispatchMessagesReadyToSend(opts *DispatchOpts) error {
 		return err
 	}
 
+	successSends := 0
+	failedSends := 0
+	failedUpdates := 0
+
+	defer func() {
+		if successSends > 0 || failedSends > 0 || failedUpdates > 0 {
+			internal.ProtectedInfoLogger(opts.Logger, "typesend: sent %d messages (failed %d to send, %d failed to update)", successSends, failedSends, failedUpdates)
+		}
+	}()
+
 	for envelope := range envelopes {
+		select {
+		case <-opts.Context.Done():
+			return context.DeadlineExceeded
+		default:
+		}
+
 		_, err := opts.Dispatcher.Dispatch(opts.Context, envelope, "email_queue")
 		if err != nil {
-			internal.ProtectedLogger(opts.Logger, "typesend: failed to dispatch (%s): %s", envelope.ID, err.Error())
+			failedSends += 1
+			internal.ProtectedErrorLogger(opts.Logger, "typesend: failed to dispatch (%s): %s", envelope.ID, err.Error())
 			continue
 		}
 
 		err = opts.Database.UpdateEnvelopeStatus(opts.Context, envelope.ID, typesend_schemas.TypeSendStatus_DELIVERING)
 
 		if err != nil {
-			internal.ProtectedLogger(opts.Logger, "typesend: failed to update envelope status (%s): %s", envelope.ID, err.Error())
+			failedUpdates += 1
+			internal.ProtectedErrorLogger(opts.Logger, "typesend: failed to update envelope status (%s): %s", envelope.ID, err.Error())
 			continue
 		}
+
+		successSends += 1
 	}
 
 	return nil

@@ -173,3 +173,24 @@ func TestDispatchMessagesUpdateStatusError(t *testing.T) {
 	assert.NotNil(t, testDispatcher.Messages["email_queue"], "email_queue should not be nil")
 	assert.Len(t, testDispatcher.Messages["email_queue"], 1, "email_queue should have 1 item")
 }
+
+func TestDispatchMessagesNoMessages(t *testing.T) {
+	db := &typesend_db.TestDatabase{}
+	db.Connect(context.Background())
+
+	// Use a dispatcher that successfully dispatches.
+	testDispatcher := &typequeue.MockDispatcher[*typesend_schemas.TypeSendEnvelope]{
+		Messages: make(map[string][]*typesend_schemas.TypeSendEnvelope),
+	}
+
+	ctx := context.WithValue(context.Background(), "trace-id", "demo")
+	err := dispatch_messages.DispatchMessagesReadyToSend(&dispatch_messages.DispatchOpts{
+		Context:    ctx,
+		Database:   db,
+		Dispatcher: testDispatcher,
+		Logger:     nil,
+	})
+
+	assert.NoError(t, err, "DispatchMessagesReadyToSend should not return an error even if update status fails")
+	assert.Nil(t, testDispatcher.Messages["email_queue"], "email_queue should be nil")
+}
