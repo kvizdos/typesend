@@ -14,6 +14,7 @@ type TestDatabase struct {
 	mu        sync.Mutex
 	connected bool
 	items     []*typesend_schemas.TypeSendEnvelope
+	templates []*typesend_schemas.TypeSendTemplate
 }
 
 // Connect simply sets the database as connected.
@@ -23,6 +24,7 @@ func (db *TestDatabase) Connect(ctx context.Context) error {
 
 	db.connected = true
 	db.items = make([]*typesend_schemas.TypeSendEnvelope, 0)
+	db.templates = make([]*typesend_schemas.TypeSendTemplate, 0)
 	return nil
 }
 
@@ -31,6 +33,13 @@ func (db *TestDatabase) Items() []*typesend_schemas.TypeSendEnvelope {
 	defer db.mu.Unlock()
 
 	return db.items
+}
+
+func (db *TestDatabase) Templates() []*typesend_schemas.TypeSendTemplate {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	return db.templates
 }
 
 func (db *TestDatabase) GetEnvelopeByID(id string) *typesend_schemas.TypeSendEnvelope {
@@ -90,4 +99,28 @@ func (db *TestDatabase) UpdateEnvelopeStatus(ctx context.Context, envelopeID str
 	}
 
 	return fmt.Errorf("envelope with ID %s not found", envelopeID)
+}
+
+func (db *TestDatabase) GetTemplateByID(ctx context.Context, templateID string, tenantID string) (*typesend_schemas.TypeSendTemplate, error) {
+	// Iterate over the items to find the envelope with the matching ID.
+	for _, template := range db.templates {
+		if template.TemplateID == templateID && template.TenantID == tenantID {
+			return template, nil
+		}
+	}
+
+	if tenantID != "base" {
+		return db.GetTemplateByID(ctx, templateID, "base")
+	}
+
+	return nil, nil
+}
+
+func (db *TestDatabase) InsertTemplate(_ context.Context, template *typesend_schemas.TypeSendTemplate) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	db.templates = append(db.templates, template)
+
+	return nil
 }

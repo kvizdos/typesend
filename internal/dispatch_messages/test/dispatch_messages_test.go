@@ -15,7 +15,9 @@ import (
 )
 
 // failingDatabase simulates a failure in GetMessagesReadyToSend.
-type failingDatabase struct{}
+type failingDatabase struct {
+	typesend_db.TestDatabase
+}
 
 func (f *failingDatabase) Connect(ctx context.Context) error { return nil }
 func (f *failingDatabase) GetMessagesReadyToSend(ctx context.Context, now time.Time) (chan *typesend_schemas.TypeSendEnvelope, error) {

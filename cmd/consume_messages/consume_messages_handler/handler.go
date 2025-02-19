@@ -55,9 +55,10 @@ func (cmh *ConsumeMessageHandler) Setup() error {
 		dynamoCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		dynamo, err := typesend_db.NewDynamoDB(dynamoCtx, &typesend_db.DynamoConfig{
-			Region:      cmh.AWSRegion,
-			TableName:   fmt.Sprintf("typesend_%s", cmh.Project),
-			ForceClient: &dynamodb.DynamoDB{},
+			Region:         cmh.AWSRegion,
+			EnvelopesTable: fmt.Sprintf("%s_typesend_envelopes", cmh.Project),
+			TemplatesTable: fmt.Sprintf("%s_typesend_templates", cmh.Project),
+			ForceClient:    &dynamodb.DynamoDB{},
 		})
 		if err != nil {
 			cmh.Deps.Logger.Errorf("failed to connect to DynamoDB: %s", err.Error())

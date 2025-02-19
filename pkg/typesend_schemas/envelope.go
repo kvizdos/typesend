@@ -27,6 +27,8 @@ type TypeSendEnvelope struct {
 
 	ToInternalID string `dynamodbav:"toInternal" json:"toInternal"`
 
+	TenantID string `dynamodbav:"tenant" json:"tenant"`
+
 	Variables map[string]interface{} `dynamodbav:"variables" json:"variables"`
 
 	TemplateID string `dynamodbav:"tid" json:"tid"`

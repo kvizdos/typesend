@@ -1,5 +1,5 @@
-resource "aws_dynamodb_table" "typesend" {
-  name         = "${vars.project}_typesend"
+resource "aws_dynamodb_table" "typesend_envelopes" {
+  name         = "${vars.project}_typesend_envelopes"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 

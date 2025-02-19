@@ -33,8 +33,9 @@ func NewDynamoDB(ctx context.Context, conf *DynamoConfig) (*DynamoTypeSendDB, er
 }
 
 type DynamoConfig struct {
-	Region    string
-	TableName string
+	Region         string
+	EnvelopesTable string
+	TemplatesTable string
 
 	ForceClient *dynamodb.DynamoDB
 }
@@ -70,7 +71,7 @@ func (db *DynamoTypeSendDB) Insert(envelope *typesend_schemas.TypeSendEnvelope) 
 
 	// Build the PutItem input.
 	input := &dynamodb.PutItemInput{
-		TableName: aws.String(db.Config.TableName),
+		TableName: aws.String(db.Config.EnvelopesTable),
 		Item:      item,
 	}
 
@@ -96,7 +97,7 @@ func (db *DynamoTypeSendDB) GetMessagesReadyToSend(ctx context.Context, timestam
 	// Here we query for items where status = 0 (i.e. UNSENT)
 	// and scheduledFor is less than or equal to our timestamp.
 	input := &dynamodb.QueryInput{
-		TableName:              aws.String(db.Config.TableName),
+		TableName:              aws.String(db.Config.EnvelopesTable),
 		IndexName:              aws.String("status-scheduledFor-index"),
 		KeyConditionExpression: aws.String("#status = :unsent and scheduledFor <= :ts"),
 		ExpressionAttributeNames: map[string]*string{
@@ -159,7 +160,7 @@ func (db *DynamoTypeSendDB) UpdateEnvelopeStatus(ctx context.Context, envelopeID
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		TableName: aws.String(db.Config.TableName),
+		TableName: aws.String(db.Config.EnvelopesTable),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {S: aws.String(envelopeID)},
 		},
@@ -176,5 +177,61 @@ func (db *DynamoTypeSendDB) UpdateEnvelopeStatus(ctx context.Context, envelopeID
 	if err != nil {
 		return fmt.Errorf("typesend: failed to update envelope status: %w", err)
 	}
+	return nil
+}
+
+func (db *DynamoTypeSendDB) GetTemplateByID(ctx context.Context, templateID string, tenantID string) (*typesend_schemas.TypeSendTemplate, error) {
+	if db.client == nil {
+		return nil, fmt.Errorf("typesend: GetTemplateByID requires a connection")
+	}
+
+	input := &dynamodb.GetItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(templateID)},
+		},
+		TableName: &db.Config.TemplatesTable,
+	}
+
+	rawItem, err := db.client.GetItemWithContext(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("typesend: failed to get template: %w", err)
+	}
+
+	if rawItem.Item == nil {
+		if tenantID != "base" {
+			return db.GetTemplateByID(ctx, templateID, "base")
+		}
+		return nil, nil
+	}
+
+	var template *typesend_schemas.TypeSendTemplate
+	if err := dynamodbattribute.UnmarshalMap(rawItem.Item, &template); err != nil {
+		return nil, fmt.Errorf("typesend: failed to unmarshal template: %w", err)
+	}
+	return template, nil
+}
+
+func (db *DynamoTypeSendDB) InsertTemplate(ctx context.Context, template *typesend_schemas.TypeSendTemplate) error {
+	if db.client == nil {
+		return fmt.Errorf("typesend: InsertTemplate requires a connection")
+	}
+	// Marshal the envelope struct into a DynamoDB attribute map.
+	item, err := dynamodbattribute.MarshalMap(template)
+	if err != nil {
+		return fmt.Errorf("typesend: failed to marshal envelope: %w", err)
+	}
+
+	// Build the PutItem input.
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String(db.Config.TemplatesTable),
+		Item:      item,
+	}
+
+	// Put the item into DynamoDB.
+	_, err = db.client.PutItemWithContext(ctx, input)
+	if err != nil {
+		return fmt.Errorf("typesend: failed to put item: %w", err)
+	}
+
 	return nil
 }

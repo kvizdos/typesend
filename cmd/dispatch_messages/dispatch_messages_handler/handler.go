@@ -100,9 +100,9 @@ func (dml *DispatchMessagesLambda) Setup() error {
 		dynamoCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		dynamo, err := typesend_db.NewDynamoDB(dynamoCtx, &typesend_db.DynamoConfig{
-			Region:      dml.AWSRegion,
-			TableName:   fmt.Sprintf("typesend_%s", dml.Project),
-			ForceClient: &dynamodb.DynamoDB{},
+			Region:         dml.AWSRegion,
+			EnvelopesTable: fmt.Sprintf("%s_typesend_envelopes", dml.Project),
+			ForceClient:    &dynamodb.DynamoDB{},
 		})
 		if err != nil {
 			dml.Deps.Logger.Errorf("failed to connect to DynamoDB: %s", err.Error())

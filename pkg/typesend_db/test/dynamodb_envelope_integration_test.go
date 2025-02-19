@@ -27,9 +27,9 @@ func TestIntegration_Insert(t *testing.T) {
 	defer testutils.KillContainer(container)
 
 	db, err := typesend_db.NewDynamoDB(context.Background(), &typesend_db.DynamoConfig{
-		Region:      "us-west-2",
-		TableName:   "test-typesend",
-		ForceClient: client,
+		Region:         "us-west-2",
+		EnvelopesTable: "test-typesend",
+		ForceClient:    client,
 	})
 	assert.NoError(t, err)
 
@@ -67,9 +67,9 @@ func TestIntegration_GetMessagesReadyToSend(t *testing.T) {
 
 	// Use ForceClient to pass in our local DynamoDB session.
 	db, err := typesend_db.NewDynamoDB(ctx, &typesend_db.DynamoConfig{
-		Region:      "us-west-2",
-		TableName:   "test-typesend",
-		ForceClient: client, // assuming your implementation allows overriding the client
+		Region:         "us-west-2",
+		EnvelopesTable: "test-typesend",
+		ForceClient:    client, // assuming your implementation allows overriding the client
 	})
 	assert.NoError(t, err, "NewDynamoDB should succeed")
 
@@ -167,9 +167,9 @@ func TestIntegration_UpdateEnvelopeStatus(t *testing.T) {
 
 	// Create our DynamoDB wrapper with ForceClient to use the local session.
 	db, err := typesend_db.NewDynamoDB(ctx, &typesend_db.DynamoConfig{
-		Region:      "us-west-2",
-		TableName:   "test-typesend",
-		ForceClient: client,
+		Region:         "us-west-2",
+		EnvelopesTable: "test-typesend",
+		ForceClient:    client,
 	})
 	assert.NoError(t, err, "NewDynamoDB should succeed")
 

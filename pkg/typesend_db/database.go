@@ -12,4 +12,7 @@ type TypeSendDatabase interface {
 	Insert(envelope *typesend_schemas.TypeSendEnvelope) error
 	GetMessagesReadyToSend(ctx context.Context, timestamp time.Time) (chan *typesend_schemas.TypeSendEnvelope, error)
 	UpdateEnvelopeStatus(ctx context.Context, envelopeID string, toStatus typesend_schemas.TypeSendStatus) error
+
+	GetTemplateByID(ctx context.Context, templateID string, tenantID string) (*typesend_schemas.TypeSendTemplate, error)
+	InsertTemplate(context.Context, *typesend_schemas.TypeSendTemplate) error
 }
