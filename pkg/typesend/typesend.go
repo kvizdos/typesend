@@ -48,7 +48,7 @@ func (t *TypeSend) Send(to TypeSendTo, variables template_variables.TypeSendVari
 		ToInternalID:   to.ToInternalID,
 		MessageGroupID: to.MessageGroupID,
 		TemplateID:     variables.GetTemplateID(),
-		Variables:      variables,
+		Variables:      variables.ToMap(),
 		ID:             ID,
 		Status:         typesend_schemas.TypeSendStatus_UNSENT,
 	})

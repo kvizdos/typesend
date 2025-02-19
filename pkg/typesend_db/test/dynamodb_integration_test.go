@@ -10,9 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/google/uuid"
 	"github.com/kvizdos/typesend/pkg/template_variables"
+	"github.com/kvizdos/typesend/pkg/testutils"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
-	"github.com/kvizdos/typesend/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,7 +42,7 @@ func TestIntegration_Insert(t *testing.T) {
 			TypeSendVariable: template_variables.TypeSendVariable{
 				AssociatedTemplateID: uuid.NewString(),
 			},
-		},
+		}.ToMap(),
 		TemplateID:     uuid.NewString(),
 		ID:             uuid.NewString(),
 		Status:         typesend_schemas.TypeSendStatus_UNSENT,

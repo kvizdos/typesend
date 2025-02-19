@@ -4,7 +4,6 @@ import (
 	"time"
 
 	typequeue "github.com/kvizdos/typequeue/pkg"
-	"github.com/kvizdos/typesend/pkg/template_variables"
 )
 
 type TypeSendStatus int
@@ -28,7 +27,7 @@ type TypeSendEnvelope struct {
 
 	ToInternalID string `dynamodbav:"toInternal" json:"toInternal"`
 
-	Variables template_variables.TypeSendVariableInterface `dynamodbav:"variables" json:"variables"`
+	Variables map[string]interface{} `dynamodbav:"variables" json:"variables"`
 
 	TemplateID string `dynamodbav:"tid" json:"tid"`
 

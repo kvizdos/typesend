@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/kvizdos/typesend/pkg/template_variables"
+	"github.com/kvizdos/typesend/pkg/testutils"
 	"github.com/kvizdos/typesend/pkg/typesend"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
-	"github.com/kvizdos/typesend/testutils"
 )
 
 func TestStubbed_Send(t *testing.T) {

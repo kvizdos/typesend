@@ -6,11 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	typequeue_mocks "github.com/kvizdos/typequeue/pkg/mocked"
 	"github.com/kvizdos/typesend/cmd/dispatch_messages/dispatch_messages_handler"
 	"github.com/kvizdos/typesend/internal/dispatch_messages"
-	"github.com/kvizdos/typesend/internal/testutils"
+	"github.com/kvizdos/typesend/pkg/testutils"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
 	"github.com/stretchr/testify/assert"
@@ -48,21 +47,6 @@ func (s *stubbedDb) GetMessagesReadyToSend(ctx context.Context, timestamp time.T
 	return ch, nil
 }
 
-// helper to create a test envelope
-func createTestEnvelope(status typesend_schemas.TypeSendStatus, scheduledFor time.Time) *typesend_schemas.TypeSendEnvelope {
-	return &typesend_schemas.TypeSendEnvelope{
-		ID:             uuid.NewString(),
-		AppID:          "test",
-		ToAddress:      "test@example.com",
-		ToInternalID:   "internal",
-		MessageGroupID: "group",
-		TemplateID:     uuid.NewString(),
-		Variables:      nil,
-		ScheduledFor:   scheduledFor,
-		Status:         status,
-	}
-}
-
 func TestHandlerSuccess(t *testing.T) {
 	dispatcher := &typequeue_mocks.MockDispatcher[*typesend_schemas.TypeSendEnvelope]{
 		Messages: make(map[string][]*typesend_schemas.TypeSendEnvelope),
@@ -70,7 +54,7 @@ func TestHandlerSuccess(t *testing.T) {
 
 	db := &stubbedDb{
 		MessagesReadyToSend: []*typesend_schemas.TypeSendEnvelope{
-			createTestEnvelope(typesend_schemas.TypeSendStatus_UNSENT, time.Now().UTC()),
+			testutils.CreateTestEnvelope(typesend_schemas.TypeSendStatus_UNSENT, time.Now().UTC()),
 		},
 	}
 	testLogger := &testutils.TestLogger{}
@@ -104,7 +88,7 @@ func TestHandlerDeadlineExceeded(t *testing.T) {
 
 	db := &stubbedDb{
 		MessagesReadyToSend: []*typesend_schemas.TypeSendEnvelope{
-			createTestEnvelope(typesend_schemas.TypeSendStatus_UNSENT, time.Now().UTC()),
+			testutils.CreateTestEnvelope(typesend_schemas.TypeSendStatus_UNSENT, time.Now().UTC()),
 		},
 	}
 	testLogger := &testutils.TestLogger{}

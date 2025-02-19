@@ -38,6 +38,7 @@ type DispatchMessagesLambda struct {
 	AWSRegion string
 	Project   string
 	Env       string
+	TraceID   string
 
 	// Dependencies are injected here. If nil, Setup will create them.
 	Deps *DispatchMessagesDependencies
@@ -88,7 +89,7 @@ func (dml *DispatchMessagesLambda) Setup() error {
 			dml.Deps.Logger.Errorf("failed to connect to SSM: %s", err.Error())
 			return fmt.Errorf("failed to connect to SSM: %w", err)
 		}
-		dml.Deps.Dispatcher = typequeue.Dispatcher[*typesend_schemas.TypeSendEnvelope]{
+		dml.Deps.Dispatcher = &typequeue.Dispatcher[*typesend_schemas.TypeSendEnvelope]{
 			SQSClient:         sqsClient,
 			GetTargetQueueURL: ssmHelper.GetTargetURL,
 		}
@@ -110,13 +111,17 @@ func (dml *DispatchMessagesLambda) Setup() error {
 		dml.Deps.DB = dynamo
 	}
 
+	if dml.TraceID == "" {
+		dml.TraceID = uuid.NewString()
+	}
+
 	return nil
 }
 
 // HandleRequest is the lambda handler method.
 func (dml *DispatchMessagesLambda) HandleRequest(ctx context.Context) error {
 	// Create a context with a trace ID and deadline.
-	sendingCtx := context.WithValue(context.Background(), "trace-id", uuid.NewString())
+	sendingCtx := context.WithValue(context.Background(), "trace-id", dml.TraceID)
 	// Since this function is run every minute, it is critical to
 	// confirm it finishes within the minute.
 	sendingCtx, cancel := context.WithDeadline(sendingCtx, dml.Deps.ContextDeadline)

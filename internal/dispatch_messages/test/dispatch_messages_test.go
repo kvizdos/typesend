@@ -8,9 +8,9 @@ import (
 
 	typequeue "github.com/kvizdos/typequeue/pkg/mocked"
 	"github.com/kvizdos/typesend/internal/dispatch_messages"
+	"github.com/kvizdos/typesend/pkg/testutils"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
-	"github.com/kvizdos/typesend/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,7 +50,7 @@ func TestDispatchMessagesSuccessful(t *testing.T) {
 		AppID:          "demo",
 		ToAddress:      "example@gmail.com",
 		ToInternalID:   "rand-uid",
-		Variables:      testutils.DummyVariable{},
+		Variables:      testutils.DummyVariable{}.ToMap(),
 		TemplateID:     "demo-template",
 		ID:             "random-uuid",
 		Status:         typesend_schemas.TypeSendStatus_UNSENT,
@@ -107,7 +107,7 @@ func TestDispatchMessagesDispatchError(t *testing.T) {
 		AppID:          "demo",
 		ToAddress:      "error@example.com",
 		ToInternalID:   "error-uid",
-		Variables:      testutils.DummyVariable{},
+		Variables:      testutils.DummyVariable{}.ToMap(),
 		TemplateID:     "demo-template",
 		ID:             "error-uuid",
 		Status:         typesend_schemas.TypeSendStatus_UNSENT,
@@ -142,7 +142,7 @@ func TestDispatchMessagesUpdateStatusError(t *testing.T) {
 		AppID:          "demo",
 		ToAddress:      "updateerror@example.com",
 		ToInternalID:   "updateerror-uid",
-		Variables:      testutils.DummyVariable{},
+		Variables:      testutils.DummyVariable{}.ToMap(),
 		TemplateID:     "demo-template",
 		ID:             "updateerror-uuid",
 		Status:         typesend_schemas.TypeSendStatus_UNSENT,
