@@ -9,7 +9,7 @@ TypeSend is a centralized email template management and sending service for deve
 
 ## Features
 ### Centralized Template Management:
-Store and manage email templates in MongoDB with a pre-built, embeddable Template Editor UI that displays all possible variables and provides live previews.
+Store and manage email templates in DynamoDB with a pre-built, embeddable Template Editor UI that displays all possible variables and provides live previews.
 
 ### Asynchronous Email Dispatch:
 The Send() function enqueues messages in AWS SQS. A Lambda function processes the queue—filling templates, logging metadata (e.g., app ID, custom metadata like "to-user-id"), sending emails, and tracking analytics.
@@ -38,7 +38,7 @@ The function packages this data into a JSON message and enqueues it into an AWS 
 ### SQS Message Processing:
 
 A Lambda function, triggered by new messages on SQS, retrieves the message.
-It loads the correct template from MongoDB, renders the email by inserting the provided variables, and logs the message details (including custom metadata).
+It loads the correct template from DynamoDB, renders the email by inserting the provided variables, and logs the message details (including custom metadata).
 The email is then sent via the configured provider (initially SendGrid).
 Open rates, click rates, and spam reports are tracked. If a recipient is identified as spammed, they are automatically marked to never receive future emails.
 

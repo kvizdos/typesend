@@ -84,6 +84,34 @@ func (db *DynamoTypeSendDB) Insert(envelope *typesend_schemas.TypeSendEnvelope) 
 	return nil
 }
 
+func (db *DynamoTypeSendDB) GetEnvelopeByID(ctx context.Context, envelopeID string) (*typesend_schemas.TypeSendEnvelope, error) {
+	if db.client == nil {
+		return nil, fmt.Errorf("typesend: GetEnvelopeByID requires a connection")
+	}
+
+	input := &dynamodb.GetItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(envelopeID)},
+		},
+		TableName: &db.Config.EnvelopesTable,
+	}
+
+	rawItem, err := db.client.GetItemWithContext(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("typesend: failed to get template: %w", err)
+	}
+
+	if rawItem.Item == nil {
+		return nil, nil
+	}
+
+	var envelope *typesend_schemas.TypeSendEnvelope
+	if err := dynamodbattribute.UnmarshalMap(rawItem.Item, &envelope); err != nil {
+		return nil, fmt.Errorf("typesend: failed to unmarshal template: %w", err)
+	}
+	return envelope, nil
+}
+
 func (db *DynamoTypeSendDB) GetMessagesReadyToSend(ctx context.Context, timestamp time.Time) (chan *typesend_schemas.TypeSendEnvelope, error) {
 	if db.client == nil {
 		return nil, fmt.Errorf("typesend: GetMessagesReadyToSend requires a connection")
@@ -185,19 +213,24 @@ func (db *DynamoTypeSendDB) GetTemplateByID(ctx context.Context, templateID stri
 		return nil, fmt.Errorf("typesend: GetTemplateByID requires a connection")
 	}
 
-	input := &dynamodb.GetItemInput{
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(templateID)},
+	input := &dynamodb.QueryInput{
+		TableName:              aws.String(db.Config.TemplatesTable),
+		KeyConditionExpression: aws.String("#id = :id AND #tenant = :tenant"),
+		ExpressionAttributeNames: map[string]*string{
+			"#id":     aws.String("id"),
+			"#tenant": aws.String("tenant"),
 		},
-		TableName: &db.Config.TemplatesTable,
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":id":     {S: aws.String(templateID)},
+			":tenant": {S: aws.String(tenantID)},
+		},
 	}
-
-	rawItem, err := db.client.GetItemWithContext(ctx, input)
+	result, err := db.client.QueryWithContext(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("typesend: failed to get template: %w", err)
 	}
 
-	if rawItem.Item == nil {
+	if len(result.Items) == 0 {
 		if tenantID != "base" {
 			return db.GetTemplateByID(ctx, templateID, "base")
 		}
@@ -205,7 +238,7 @@ func (db *DynamoTypeSendDB) GetTemplateByID(ctx context.Context, templateID stri
 	}
 
 	var template *typesend_schemas.TypeSendTemplate
-	if err := dynamodbattribute.UnmarshalMap(rawItem.Item, &template); err != nil {
+	if err := dynamodbattribute.UnmarshalMap(result.Items[0], &template); err != nil {
 		return nil, fmt.Errorf("typesend: failed to unmarshal template: %w", err)
 	}
 	return template, nil

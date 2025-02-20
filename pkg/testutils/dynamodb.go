@@ -53,7 +53,7 @@ func SetupDynamoDBLocalSession(ctx context.Context) (*dynamodb.DynamoDB, testcon
 
 	// (Optional) Create the table if needed.
 	_, err = dynamoClient.CreateTable(&dynamodb.CreateTableInput{
-		TableName: aws.String("test-typesend"),
+		TableName: aws.String("test-typesend-envelopes"),
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
 				AttributeName: aws.String("id"),
@@ -98,9 +98,43 @@ func SetupDynamoDBLocalSession(ctx context.Context) (*dynamodb.DynamoDB, testcon
 		return nil, nil, fmt.Errorf("failed to create table: %v", err)
 	}
 
+	_, err = dynamoClient.CreateTable(&dynamodb.CreateTableInput{
+		TableName: aws.String("test-typesend-templates"),
+		AttributeDefinitions: []*dynamodb.AttributeDefinition{
+			{
+				AttributeName: aws.String("tenant"),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String("id"),
+				AttributeType: aws.String("S"),
+			},
+		},
+		KeySchema: []*dynamodb.KeySchemaElement{
+			{
+				AttributeName: aws.String("tenant"),
+				KeyType:       aws.String("HASH"), // Partition key
+			},
+			{
+				AttributeName: aws.String("id"),
+				KeyType:       aws.String("RANGE"), // Sort key
+			},
+		},
+		BillingMode: aws.String("PAY_PER_REQUEST"),
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create table: %v", err)
+	}
+
 	// Wait until the table exists.
 	err = dynamoClient.WaitUntilTableExists(&dynamodb.DescribeTableInput{
-		TableName: aws.String("test-typesend"),
+		TableName: aws.String("test-typesend-envelopes"),
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to wait for table creation: %w", err)
+	}
+	err = dynamoClient.WaitUntilTableExists(&dynamodb.DescribeTableInput{
+		TableName: aws.String("test-typesend-templates"),
 	})
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to wait for table creation: %w", err)

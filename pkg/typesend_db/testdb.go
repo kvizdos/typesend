@@ -42,13 +42,13 @@ func (db *TestDatabase) Templates() []*typesend_schemas.TypeSendTemplate {
 	return db.templates
 }
 
-func (db *TestDatabase) GetEnvelopeByID(id string) *typesend_schemas.TypeSendEnvelope {
+func (db *TestDatabase) GetEnvelopeByID(_ context.Context, id string) (*typesend_schemas.TypeSendEnvelope, error) {
 	for _, item := range db.items {
 		if item.ID == id {
-			return item
+			return item, nil
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (db *TestDatabase) Insert(envelope *typesend_schemas.TypeSendEnvelope) error {

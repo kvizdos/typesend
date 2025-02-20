@@ -28,7 +28,7 @@ func TestIntegration_Insert(t *testing.T) {
 
 	db, err := typesend_db.NewDynamoDB(context.Background(), &typesend_db.DynamoConfig{
 		Region:         "us-west-2",
-		EnvelopesTable: "test-typesend",
+		EnvelopesTable: "test-typesend-envelopes",
 		ForceClient:    client,
 	})
 	assert.NoError(t, err)
@@ -68,7 +68,7 @@ func TestIntegration_GetMessagesReadyToSend(t *testing.T) {
 	// Use ForceClient to pass in our local DynamoDB session.
 	db, err := typesend_db.NewDynamoDB(ctx, &typesend_db.DynamoConfig{
 		Region:         "us-west-2",
-		EnvelopesTable: "test-typesend",
+		EnvelopesTable: "test-typesend-envelopes",
 		ForceClient:    client, // assuming your implementation allows overriding the client
 	})
 	assert.NoError(t, err, "NewDynamoDB should succeed")
@@ -152,6 +152,84 @@ func TestIntegration_GetMessagesReadyToSend(t *testing.T) {
 	assert.Equal(t, 0, count, "No envelopes should be returned when context is canceled")
 }
 
+func TestIntegration_GetEnvelopeByID(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+	ctx := context.Background()
+
+	// Setup DynamoDB Local session using our testutils helper.
+	client, container, err := testutils.SetupDynamoDBLocalSession(ctx)
+	if ok := assert.NoError(t, err, "DynamoDB Setup should not return error"); !ok {
+		return
+	}
+	defer testutils.KillContainer(container)
+
+	// Create our DynamoDB wrapper using the local client.
+	db, err := typesend_db.NewDynamoDB(ctx, &typesend_db.DynamoConfig{
+		Region:         "us-west-2",
+		EnvelopesTable: "test-typesend-envelopes",
+		ForceClient:    client,
+	})
+	assert.NoError(t, err, "NewDynamoDB should succeed")
+
+	// Create and insert a test envelope.
+	envelope := &typesend_schemas.TypeSendEnvelope{
+		ID:             uuid.NewString(),
+		AppID:          "test",
+		ToAddress:      "test@example.com",
+		ToInternalID:   "123",
+		MessageGroupID: "group-1",
+		TemplateID:     uuid.NewString(),
+		ScheduledFor:   time.Now().UTC(),
+		Status:         typesend_schemas.TypeSendStatus_UNSENT,
+	}
+
+	err = db.Insert(envelope)
+	assert.NoError(t, err, "Insert envelope should succeed")
+
+	// Allow a short delay for DynamoDB Local to index the inserted item.
+	time.Sleep(1 * time.Second)
+
+	// Retrieve the envelope by its ID.
+	gotEnvelope, err := db.GetEnvelopeByID(ctx, envelope.ID)
+	assert.NoError(t, err, "GetEnvelopeByID should succeed")
+	assert.NotNil(t, gotEnvelope, "Envelope should be found")
+
+	// Verify that the envelope fields match.
+	assert.Equal(t, envelope.ID, gotEnvelope.ID, "Envelope ID should match")
+	assert.Equal(t, envelope.AppID, gotEnvelope.AppID, "AppID should match")
+	assert.Equal(t, envelope.ToAddress, gotEnvelope.ToAddress, "ToAddress should match")
+	assert.Equal(t, envelope.Status, gotEnvelope.Status, "Status should match")
+}
+
+func TestIntegration_GetEnvelopeByIDNotFound(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+	ctx := context.Background()
+
+	// Setup DynamoDB Local session using our testutils helper.
+	client, container, err := testutils.SetupDynamoDBLocalSession(ctx)
+	if ok := assert.NoError(t, err, "DynamoDB Setup should not return error"); !ok {
+		return
+	}
+	defer testutils.KillContainer(container)
+
+	// Create our DynamoDB wrapper using the local client.
+	db, err := typesend_db.NewDynamoDB(ctx, &typesend_db.DynamoConfig{
+		Region:         "us-west-2",
+		EnvelopesTable: "test-typesend-envelopes",
+		ForceClient:    client,
+	})
+	assert.NoError(t, err, "NewDynamoDB should succeed")
+
+	// Retrieve the envelope by its ID.
+	gotEnvelope, err := db.GetEnvelopeByID(ctx, "random-id")
+	assert.NoError(t, err, "GetEnvelopeByID should not return error")
+	assert.Nil(t, gotEnvelope)
+}
+
 func TestIntegration_UpdateEnvelopeStatus(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
@@ -168,7 +246,7 @@ func TestIntegration_UpdateEnvelopeStatus(t *testing.T) {
 	// Create our DynamoDB wrapper with ForceClient to use the local session.
 	db, err := typesend_db.NewDynamoDB(ctx, &typesend_db.DynamoConfig{
 		Region:         "us-west-2",
-		EnvelopesTable: "test-typesend",
+		EnvelopesTable: "test-typesend-envelopes",
 		ForceClient:    client,
 	})
 	assert.NoError(t, err, "NewDynamoDB should succeed")
@@ -197,7 +275,7 @@ func TestIntegration_UpdateEnvelopeStatus(t *testing.T) {
 
 	// Retrieve the updated envelope directly using the DynamoDB client.
 	getInput := &dynamodb.GetItemInput{
-		TableName: aws.String("test-typesend"),
+		TableName: aws.String("test-typesend-envelopes"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {S: aws.String(envelope.ID)},
 		},

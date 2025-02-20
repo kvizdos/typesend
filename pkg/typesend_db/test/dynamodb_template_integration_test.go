@@ -21,7 +21,7 @@ func TestIntegration_InsertTemplate(t *testing.T) {
 
 	db, err := typesend_db.NewDynamoDB(context.Background(), &typesend_db.DynamoConfig{
 		Region:         "us-west-2",
-		TemplatesTable: "test-typesend",
+		TemplatesTable: "test-typesend-templates",
 		ForceClient:    client,
 	})
 	assert.NoError(t, err)
@@ -43,7 +43,7 @@ func TestIntegration_GetTemplateByExists(t *testing.T) {
 
 	db, err := typesend_db.NewDynamoDB(context.Background(), &typesend_db.DynamoConfig{
 		Region:         "us-west-2",
-		TemplatesTable: "test-typesend",
+		TemplatesTable: "test-typesend-templates",
 		ForceClient:    client,
 	})
 	assert.NoError(t, err)
@@ -70,7 +70,7 @@ func TestIntegration_GetTemplateByTenantDoesNotExistButBaseDoes(t *testing.T) {
 
 	db, err := typesend_db.NewDynamoDB(context.Background(), &typesend_db.DynamoConfig{
 		Region:         "us-west-2",
-		TemplatesTable: "test-typesend",
+		TemplatesTable: "test-typesend-templates",
 		ForceClient:    client,
 	})
 	assert.NoError(t, err)
@@ -83,6 +83,7 @@ func TestIntegration_GetTemplateByTenantDoesNotExistButBaseDoes(t *testing.T) {
 	assert.NoError(t, err, "No error expected on DynamoDB.GetTemplateByID")
 	assert.NotNil(t, template, "Template should not be nil")
 	assert.Equal(t, insertedTemplate, template)
+	assert.Equal(t, insertedTemplate.TenantID, "base")
 }
 
 func TestIntegration_GetTemplateByTenantDoesExist(t *testing.T) {
@@ -97,7 +98,7 @@ func TestIntegration_GetTemplateByTenantDoesExist(t *testing.T) {
 
 	db, err := typesend_db.NewDynamoDB(context.Background(), &typesend_db.DynamoConfig{
 		Region:         "us-west-2",
-		TemplatesTable: "test-typesend",
+		TemplatesTable: "test-typesend-templates",
 		ForceClient:    client,
 	})
 	assert.NoError(t, err)
@@ -115,6 +116,7 @@ func TestIntegration_GetTemplateByTenantDoesExist(t *testing.T) {
 	assert.NoError(t, err, "No error expected on DynamoDB.GetTemplateByID")
 	assert.NotNil(t, template, "Template should not be nil")
 	assert.Equal(t, tenantTemplate, template)
+	assert.Equal(t, tenantTemplate.TenantID, "test-tenant")
 }
 
 func TestIntegration_GetTemplateByDoesNotExist(t *testing.T) {
@@ -129,7 +131,7 @@ func TestIntegration_GetTemplateByDoesNotExist(t *testing.T) {
 
 	db, err := typesend_db.NewDynamoDB(context.Background(), &typesend_db.DynamoConfig{
 		Region:         "us-west-2",
-		TemplatesTable: "test-typesend",
+		TemplatesTable: "test-typesend-templates",
 		ForceClient:    client,
 	})
 	assert.NoError(t, err)

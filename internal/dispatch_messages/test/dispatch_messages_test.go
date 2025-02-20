@@ -79,7 +79,11 @@ func TestDispatchMessagesSuccessful(t *testing.T) {
 	assert.Len(t, testDispatcher.Messages["email_queue"], 1, "email_queue should have 1 item")
 	assert.Equal(t, testDispatcher.Messages["email_queue"][0], env, "envelope does not match")
 
-	assert.Equal(t, typesend_schemas.TypeSendStatus_DELIVERING, db.GetEnvelopeByID(env.ID).Status, "wrong status")
+	gotEnv, err := db.GetEnvelopeByID(nil, env.ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, gotEnv)
+
+	assert.Equal(t, typesend_schemas.TypeSendStatus_DELIVERING, gotEnv.Status, "wrong status")
 }
 
 func TestDispatchMessagesGetMessagesError(t *testing.T) {

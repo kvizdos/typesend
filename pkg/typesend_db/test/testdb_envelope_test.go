@@ -128,3 +128,52 @@ func TestTestDatabase_UpdateEnvelopeStatus_NotFound(t *testing.T) {
 	assert.Error(t, err, "Expected an error when updating a non-existent envelope")
 	assert.Contains(t, err.Error(), "not found", "Error message should indicate envelope not found")
 }
+
+// TestTestDatabase_GetEnvelopeByID verifies that an envelope that has been inserted is returned correctly.
+func TestTestDatabase_GetEnvelopeByID(t *testing.T) {
+	// Create and connect the test database.
+	db := &typesend_db.TestDatabase{}
+	err := db.Connect(context.Background())
+	assert.NoError(t, err, "Connect should not return an error")
+
+	// Create a test envelope.
+	envelope := &typesend_schemas.TypeSendEnvelope{
+		ID:             uuid.NewString(),
+		AppID:          "test",
+		ToAddress:      "test@example.com",
+		ToInternalID:   "internal",
+		MessageGroupID: "group",
+		TemplateID:     uuid.NewString(),
+		Variables:      nil,
+		ScheduledFor:   time.Now().UTC(),
+		Status:         typesend_schemas.TypeSendStatus_UNSENT,
+	}
+
+	// Insert the envelope.
+	err = db.Insert(envelope)
+	assert.NoError(t, err, "Insert should not return an error")
+
+	// Retrieve the envelope by its ID.
+	gotEnvelope, err := db.GetEnvelopeByID(context.Background(), envelope.ID)
+	assert.NoError(t, err, "GetEnvelopeByID should succeed")
+	assert.NotNil(t, gotEnvelope, "Envelope should be found")
+
+	// Verify that the envelope fields match.
+	assert.Equal(t, envelope.ID, gotEnvelope.ID, "Envelope ID should match")
+	assert.Equal(t, envelope.AppID, gotEnvelope.AppID, "AppID should match")
+	assert.Equal(t, envelope.ToAddress, gotEnvelope.ToAddress, "ToAddress should match")
+	assert.Equal(t, envelope.Status, gotEnvelope.Status, "Status should match")
+}
+
+// TestTestDatabase_GetEnvelopeByIDNotFound verifies that a lookup for a non-existent envelope returns nil.
+func TestTestDatabase_GetEnvelopeByIDNotFound(t *testing.T) {
+	// Create and connect the test database.
+	db := &typesend_db.TestDatabase{}
+	err := db.Connect(context.Background())
+	assert.NoError(t, err, "Connect should not return an error")
+
+	// Attempt to get an envelope with an ID that does not exist.
+	gotEnvelope, err := db.GetEnvelopeByID(context.Background(), "non-existent-id")
+	assert.NoError(t, err, "GetEnvelopeByID should not return an error")
+	assert.Nil(t, gotEnvelope, "Expected nil when envelope is not found")
+}
