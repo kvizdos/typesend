@@ -59,11 +59,57 @@ func TestStubbed_Send(t *testing.T) {
 	assert.Equal(t, to.ToAddress, envelope.ToAddress)
 	assert.Equal(t, to.ToName, envelope.ToName)
 	assert.Equal(t, to.ToInternalID, envelope.ToInternalID)
+	assert.Equal(t, "base", envelope.TenantID)
 	assert.Equal(t, sendAt, envelope.ScheduledFor)
 	assert.Equal(t, typesend_schemas.TypeSendStatus_UNSENT, envelope.Status)
 	assert.Equal(t, id, envelope.ID)
 	assert.Equal(t, vars.GetTemplateID(), envelope.TemplateID)
 	assert.NotEmpty(t, envelope.MessageGroupID)
+}
+
+func TestStubbed_SendCustomTenant(t *testing.T) {
+	// Create and connect the in-memory test database.
+	ctx := context.Background()
+	db := &typesend_db.TestDatabase{}
+	err := db.Connect(ctx)
+	assert.NoError(t, err)
+
+	// Initialize TypeSend with the test database.
+	ts := &typesend.TypeSend{
+		AppID:    "test-app",
+		Database: db,
+	}
+
+	// Build a TypeSendTo instance.
+	to := typesend_schemas.TypeSendTo{
+		ToAddress:    "test.dsad+test@example.com",
+		ToName:       "Kenton Vizdos",
+		ToInternalID: "internal-123",
+		ToTenantID:   "CustomTenantID",
+		// Leave MessageGroupID empty so that Send() generates one.
+	}
+
+	// Set a UTC timestamp for sending.
+	sendAt := time.Now().UTC()
+
+	// Create dummy template variables.
+	vars := testutils.DummyVariable{
+		TypeSendVariable: typesend_schemas.TypeSendVariable{
+			AssociatedTemplateID: uuid.NewString(),
+		},
+	}
+
+	// Call Send, which should insert an envelope into our test database.
+	id, err := ts.Send(to, vars, sendAt)
+	assert.NoError(t, err)
+	assert.NotEqual(t, uuid.Nil, id)
+
+	// Verify that the envelope was inserted.
+	items := db.Items()
+	assert.Len(t, items, 1)
+
+	envelope := items[0]
+	assert.Equal(t, "CustomTenantID", envelope.TenantID)
 }
 
 func TestStubbed_Send_InvalidEmailFormat(t *testing.T) {

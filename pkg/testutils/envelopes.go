@@ -19,5 +19,6 @@ func CreateTestEnvelope(status typesend_schemas.TypeSendStatus, scheduledFor tim
 		Variables:      nil,
 		ScheduledFor:   scheduledFor,
 		Status:         status,
+		TenantID:       "base",
 	}
 }

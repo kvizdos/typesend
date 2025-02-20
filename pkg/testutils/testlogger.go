@@ -14,6 +14,7 @@ type TestLogger struct {
 	DebugLogs []*string
 	InfoLogs  []*string
 	ErrorLogs []*string
+	WarnLogs  []*string
 
 	DoLog bool
 	mutex sync.Mutex
@@ -23,8 +24,17 @@ func (t *TestLogger) Panicf(msg string, args ...any) {
 	t.Test.Errorf("PANIC: %s", fmt.Sprintf(msg, args...))
 	return
 }
-func (t *TestLogger) Warnf(msg string, args ...any) {
-	t.Test.Errorf("Warn: %s", fmt.Sprintf(msg, args...))
+func (l *TestLogger) Warnf(format string, args ...any) {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	if l.WarnLogs == nil {
+		l.WarnLogs = []*string{}
+	}
+	o := fmt.Sprintf(format, args...)
+	l.WarnLogs = append(l.WarnLogs, &o)
+	if l.DoLog {
+		l.Test.Logf("ERROR: %s", o)
+	}
 	return
 }
 func (t *TestLogger) Printf(msg string, args ...any) {
@@ -37,7 +47,7 @@ func (l *TestLogger) Errorf(format string, v ...any) {
 		l.ErrorLogs = []*string{}
 	}
 	o := fmt.Sprintf(format, v...)
-	l.ErrorLogs = append(l.DebugLogs, &o)
+	l.ErrorLogs = append(l.ErrorLogs, &o)
 	l.mutex.Unlock()
 	if l.DoLog {
 		l.Test.Logf("ERROR: %s", o)

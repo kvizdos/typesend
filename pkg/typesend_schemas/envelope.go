@@ -12,11 +12,13 @@ const (
 	TypeSendStatus_UNSENT     TypeSendStatus = 0
 	TypeSendStatus_DELIVERING TypeSendStatus = 1
 	TypeSendStatus_SENT       TypeSendStatus = 2
+	TypeSendStatus_FAILED     TypeSendStatus = 3
 )
 
 type TypeSendTo struct {
 	ToAddress      string
 	ToName         string
+	ToTenantID     string
 	ToInternalID   string
 	MessageGroupID string
 }

@@ -34,6 +34,10 @@ func (t *TypeSend) Send(to typesend_schemas.TypeSendTo, variables typesend_schem
 		to.MessageGroupID = uuid.NewString()
 	}
 
+	if to.ToTenantID == "" {
+		to.ToTenantID = "base"
+	}
+
 	err := t.Database.Insert(&typesend_schemas.TypeSendEnvelope{
 		AppID:          t.AppID,
 		ScheduledFor:   sendAt,
@@ -41,6 +45,7 @@ func (t *TypeSend) Send(to typesend_schemas.TypeSendTo, variables typesend_schem
 		ToName:         to.ToName,
 		ToInternalID:   to.ToInternalID,
 		MessageGroupID: to.MessageGroupID,
+		TenantID:       to.ToTenantID,
 		TemplateID:     variables.GetTemplateID(),
 		Variables:      variables.ToMap(),
 		ID:             ID,
