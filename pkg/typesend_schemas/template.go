@@ -16,17 +16,42 @@ type TypeSendTemplate struct {
 	FromName    string `dynamodbav:"from_name" json:"from_name"`
 }
 
-func (t TypeSendTemplate) Fill(vars map[string]interface{}) (*string, error) {
+func (t *TypeSendTemplate) Fill(vars map[string]interface{}) error {
+	if err := t.fillContent(vars); err != nil {
+		return err
+	}
+	if err := t.fillSubject(vars); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *TypeSendTemplate) fillContent(vars map[string]interface{}) error {
 	tmpl, err := template.New("content").Parse(t.Content)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, vars); err != nil {
-		return nil, err
+		return err
 	}
 
-	out := buf.String()
-	return &out, nil
+	t.Content = buf.String()
+	return nil
+}
+
+func (t *TypeSendTemplate) fillSubject(vars map[string]interface{}) error {
+	tmpl, err := template.New("content").Parse(t.Subject)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, vars); err != nil {
+		return err
+	}
+
+	t.Subject = buf.String()
+	return nil
 }

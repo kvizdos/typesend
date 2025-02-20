@@ -1,10 +1,8 @@
 package testutils
 
-import (
-	"github.com/kvizdos/typesend/pkg/template_variables"
-)
+import "github.com/kvizdos/typesend/pkg/typesend_schemas"
 
 // DummyVariable is a simple implementation of template_variables.TypeSendVariableInterface
 type DummyVariable struct {
-	template_variables.TypeSendVariable
+	typesend_schemas.TypeSendVariable
 }

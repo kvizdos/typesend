@@ -4,13 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/kvizdos/typesend/pkg/template_variables"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
 )
 
 type RegisteredTemplate struct {
-	Variables   template_variables.TypeSendVariableInterface
+	Variables   typesend_schemas.TypeSendVariableInterface
 	FromAddress string
 	FromName    string
 

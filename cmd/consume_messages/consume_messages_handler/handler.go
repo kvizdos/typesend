@@ -77,14 +77,6 @@ func (cmh *ConsumeMessageHandler) Handle(ctx context.Context, sqsEvent events.SQ
 	}
 	consumer.Consume(context.Background(), typequeue.ConsumerSQSOptions{}, func(envelope *typesend_schemas.TypeSendEnvelope) error {
 		internal.ProtectedInfoLogger(cmh.Deps.Logger, "%+v\n", envelope)
-		/*
-			- Confirm envelope.ScheduledFor is before right now
-			- Confirm that the envelope is set to "DELIVERING" in Database
-				-- If its not, just return `nil` here. It will be retried by the Scheduler.
-			- Build the Template (e.g. fill variables)
-			- Send Email
-			... Easy right??
-		*/
 
 		return nil
 	})

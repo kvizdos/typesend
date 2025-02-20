@@ -3,6 +3,7 @@ package testutils
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -51,93 +52,113 @@ func SetupDynamoDBLocalSession(ctx context.Context) (*dynamodb.DynamoDB, testcon
 
 	dynamoClient := dynamodb.New(sess)
 
-	// (Optional) Create the table if needed.
-	_, err = dynamoClient.CreateTable(&dynamodb.CreateTableInput{
-		TableName: aws.String("test-typesend-envelopes"),
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
-			{
-				AttributeName: aws.String("id"),
-				AttributeType: aws.String("S"),
-			},
-			{
-				AttributeName: aws.String("status"),
-				AttributeType: aws.String("N"),
-			},
-			{
-				AttributeName: aws.String("scheduledFor"),
-				AttributeType: aws.String("S"),
-			},
-		},
-		KeySchema: []*dynamodb.KeySchemaElement{
-			{
-				AttributeName: aws.String("id"),
-				KeyType:       aws.String("HASH"),
-			},
-		},
-		BillingMode: aws.String("PAY_PER_REQUEST"),
-		GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
-			{
-				IndexName: aws.String("status-scheduledFor-index"),
-				KeySchema: []*dynamodb.KeySchemaElement{
-					{
-						AttributeName: aws.String("status"),
-						KeyType:       aws.String("HASH"),
-					},
-					{
-						AttributeName: aws.String("scheduledFor"),
-						KeyType:       aws.String("RANGE"),
-					},
+	var setupWg sync.WaitGroup
+	setupWg.Add(2)
+
+	go func() {
+		defer setupWg.Done()
+		// (Optional) Create the table if needed.
+		_, err = dynamoClient.CreateTable(&dynamodb.CreateTableInput{
+			TableName: aws.String("test-typesend-envelopes"),
+			AttributeDefinitions: []*dynamodb.AttributeDefinition{
+				{
+					AttributeName: aws.String("id"),
+					AttributeType: aws.String("S"),
 				},
-				Projection: &dynamodb.Projection{
-					ProjectionType: aws.String("ALL"),
+				{
+					AttributeName: aws.String("status"),
+					AttributeType: aws.String("N"),
+				},
+				{
+					AttributeName: aws.String("scheduledFor"),
+					AttributeType: aws.String("S"),
 				},
 			},
-		},
-	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create table: %v", err)
-	}
+			KeySchema: []*dynamodb.KeySchemaElement{
+				{
+					AttributeName: aws.String("id"),
+					KeyType:       aws.String("HASH"),
+				},
+			},
+			BillingMode: aws.String("PAY_PER_REQUEST"),
+			GlobalSecondaryIndexes: []*dynamodb.GlobalSecondaryIndex{
+				{
+					IndexName: aws.String("status-scheduledFor-index"),
+					KeySchema: []*dynamodb.KeySchemaElement{
+						{
+							AttributeName: aws.String("status"),
+							KeyType:       aws.String("HASH"),
+						},
+						{
+							AttributeName: aws.String("scheduledFor"),
+							KeyType:       aws.String("RANGE"),
+						},
+					},
+					Projection: &dynamodb.Projection{
+						ProjectionType: aws.String("ALL"),
+					},
+				},
+			},
+		})
+		if err != nil {
+			panic(fmt.Errorf("failed to create table: %w", err))
+		}
+	}()
 
-	_, err = dynamoClient.CreateTable(&dynamodb.CreateTableInput{
-		TableName: aws.String("test-typesend-templates"),
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
-			{
-				AttributeName: aws.String("tenant"),
-				AttributeType: aws.String("S"),
+	go func() {
+		defer setupWg.Done()
+		_, err = dynamoClient.CreateTable(&dynamodb.CreateTableInput{
+			TableName: aws.String("test-typesend-templates"),
+			AttributeDefinitions: []*dynamodb.AttributeDefinition{
+				{
+					AttributeName: aws.String("tenant"),
+					AttributeType: aws.String("S"),
+				},
+				{
+					AttributeName: aws.String("id"),
+					AttributeType: aws.String("S"),
+				},
 			},
-			{
-				AttributeName: aws.String("id"),
-				AttributeType: aws.String("S"),
+			KeySchema: []*dynamodb.KeySchemaElement{
+				{
+					AttributeName: aws.String("tenant"),
+					KeyType:       aws.String("HASH"), // Partition key
+				},
+				{
+					AttributeName: aws.String("id"),
+					KeyType:       aws.String("RANGE"), // Sort key
+				},
 			},
-		},
-		KeySchema: []*dynamodb.KeySchemaElement{
-			{
-				AttributeName: aws.String("tenant"),
-				KeyType:       aws.String("HASH"), // Partition key
-			},
-			{
-				AttributeName: aws.String("id"),
-				KeyType:       aws.String("RANGE"), // Sort key
-			},
-		},
-		BillingMode: aws.String("PAY_PER_REQUEST"),
-	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create table: %v", err)
-	}
+			BillingMode: aws.String("PAY_PER_REQUEST"),
+		})
+		if err != nil {
+			panic(fmt.Errorf("failed to create table: %w", err))
+		}
+	}()
 
-	// Wait until the table exists.
-	err = dynamoClient.WaitUntilTableExists(&dynamodb.DescribeTableInput{
-		TableName: aws.String("test-typesend-envelopes"),
-	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to wait for table creation: %w", err)
-	}
-	err = dynamoClient.WaitUntilTableExists(&dynamodb.DescribeTableInput{
-		TableName: aws.String("test-typesend-templates"),
-	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to wait for table creation: %w", err)
-	}
+	setupWg.Wait()
+
+	var readyWg sync.WaitGroup
+	readyWg.Add(2)
+	go func() {
+		defer readyWg.Done()
+		// Wait until the table exists.
+		err = dynamoClient.WaitUntilTableExists(&dynamodb.DescribeTableInput{
+			TableName: aws.String("test-typesend-envelopes"),
+		})
+		if err != nil {
+			panic(fmt.Sprintf("failed to wait for table creation: %s", err.Error()))
+		}
+	}()
+	go func() {
+		defer readyWg.Done()
+		err = dynamoClient.WaitUntilTableExists(&dynamodb.DescribeTableInput{
+			TableName: aws.String("test-typesend-templates"),
+		})
+		if err != nil {
+			panic(fmt.Sprintf("failed to wait for table creation: %s", err.Error()))
+		}
+	}()
+	readyWg.Wait()
 	return dynamoClient, container, nil
 }

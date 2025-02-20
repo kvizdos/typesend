@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kvizdos/typesend/pkg/template_variables"
 	"github.com/kvizdos/typesend/pkg/testutils"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
@@ -34,7 +33,7 @@ func TestRegisterTemplateDoesNotExist(t *testing.T) {
 		FromName:      expectTemplate.FromName,
 		BootstrapBody: expectTemplate.Content,
 		Variables: testutils.DummyVariable{
-			TypeSendVariable: template_variables.TypeSendVariable{
+			TypeSendVariable: typesend_schemas.TypeSendVariable{
 				AssociatedTemplateID: expectTemplate.TemplateID,
 			},
 		},
@@ -69,7 +68,7 @@ func TestRegisterTemplateDoesNotRecreate(t *testing.T) {
 
 	testTemplate := &typesend_templates.RegisteredTemplate{
 		Variables: testutils.DummyVariable{
-			TypeSendVariable: template_variables.TypeSendVariable{
+			TypeSendVariable: typesend_schemas.TypeSendVariable{
 				AssociatedTemplateID: expectTemplate.TemplateID,
 			},
 		},

@@ -1,4 +1,4 @@
-package template_variables
+package typesend_schemas
 
 type TypeSendVariableInterface interface {
 	GetTemplateID() string

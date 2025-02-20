@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/kvizdos/typesend/pkg/template_variables"
 	"github.com/kvizdos/typesend/pkg/testutils"
 	"github.com/kvizdos/typesend/pkg/typesend"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
@@ -29,7 +28,7 @@ func TestStubbed_Send(t *testing.T) {
 	}
 
 	// Build a TypeSendTo instance.
-	to := typesend.TypeSendTo{
+	to := typesend_schemas.TypeSendTo{
 		ToAddress:    "test.dsad+test@example.com",
 		ToInternalID: "internal-123",
 		// Leave MessageGroupID empty so that Send() generates one.
@@ -40,7 +39,7 @@ func TestStubbed_Send(t *testing.T) {
 
 	// Create dummy template variables.
 	vars := testutils.DummyVariable{
-		TypeSendVariable: template_variables.TypeSendVariable{
+		TypeSendVariable: typesend_schemas.TypeSendVariable{
 			AssociatedTemplateID: uuid.NewString(),
 		},
 	}
@@ -79,7 +78,7 @@ func TestStubbed_Send_InvalidEmailFormat(t *testing.T) {
 	}
 
 	// Build a TypeSendTo instance.
-	to := typesend.TypeSendTo{
+	to := typesend_schemas.TypeSendTo{
 		ToAddress:    "bademail",
 		ToInternalID: "internal-123",
 		// Leave MessageGroupID empty so that Send() generates one.

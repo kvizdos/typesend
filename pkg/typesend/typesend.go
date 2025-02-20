@@ -5,16 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kvizdos/typesend/pkg/template_variables"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
 )
-
-type TypeSendTo struct {
-	ToAddress      string
-	ToInternalID   string
-	MessageGroupID string
-}
 
 type TypeSend struct {
 	AppID string
@@ -22,7 +15,7 @@ type TypeSend struct {
 	Database typesend_db.TypeSendDatabase
 }
 
-func (t *TypeSend) Send(to TypeSendTo, variables template_variables.TypeSendVariableInterface, sendAt time.Time) (string, error) {
+func (t *TypeSend) Send(to typesend_schemas.TypeSendTo, variables typesend_schemas.TypeSendVariableInterface, sendAt time.Time) (string, error) {
 	if _, err := mail.ParseAddress(to.ToAddress); err != nil {
 		return "", TypeSendError_INVALID_EMAIL
 	}

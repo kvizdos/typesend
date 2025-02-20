@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/google/uuid"
-	"github.com/kvizdos/typesend/pkg/template_variables"
 	"github.com/kvizdos/typesend/pkg/testutils"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
@@ -39,7 +38,7 @@ func TestIntegration_Insert(t *testing.T) {
 		ToAddress:    "test@example.com",
 		ToInternalID: "123",
 		Variables: testutils.DummyVariable{
-			TypeSendVariable: template_variables.TypeSendVariable{
+			TypeSendVariable: typesend_schemas.TypeSendVariable{
 				AssociatedTemplateID: uuid.NewString(),
 			},
 		}.ToMap(),
@@ -139,7 +138,7 @@ func TestIntegration_GetMessagesReadyToSend(t *testing.T) {
 
 	// Test case 2: Context cancellation.
 	// Create a context that cancels quickly.
-	cancelCtx, cancel := context.WithCancel(ctx)
+	cancelCtx, cancel := context.WithCancel(context.Background())
 	// Cancel the context immediately.
 	cancel()
 	ch, err = db.GetMessagesReadyToSend(cancelCtx, queryTime)

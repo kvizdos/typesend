@@ -21,3 +21,11 @@ func ProtectedInfoLogger(logger typesend_schemas.Logger, format string, args ...
 		log.Printf(format, args...)
 	}
 }
+
+func ProtectedWarnLogger(logger typesend_schemas.Logger, format string, args ...any) {
+	if logger != nil {
+		logger.Warnf(format, args...)
+	} else {
+		log.Printf(format, args...)
+	}
+}

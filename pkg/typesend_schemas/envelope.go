@@ -14,6 +14,12 @@ const (
 	TypeSendStatus_SENT       TypeSendStatus = 2
 )
 
+type TypeSendTo struct {
+	ToAddress      string
+	ToInternalID   string
+	MessageGroupID string
+}
+
 type TypeSendEnvelope struct {
 	typequeue.SQSAble
 
