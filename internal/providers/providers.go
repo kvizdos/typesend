@@ -5,5 +5,5 @@ import (
 )
 
 type TypeSendProvider interface {
-	Send(to typesend_schemas.TypeSendTo, withVariables typesend_schemas.TypeSendVariable) error
+	Deliver(e *typesend_schemas.TypeSendEnvelope) error
 }

@@ -15,4 +15,5 @@ func KillContainer(container testcontainers.Container) {
 	if err != nil {
 		log.Printf("FAILED TO TERMINATE: %s", err.Error())
 	}
+	time.Sleep(3 * time.Second) // shakey test prevention
 }

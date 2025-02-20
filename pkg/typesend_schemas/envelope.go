@@ -16,6 +16,7 @@ const (
 
 type TypeSendTo struct {
 	ToAddress      string
+	ToName         string
 	ToInternalID   string
 	MessageGroupID string
 }
@@ -30,6 +31,8 @@ type TypeSendEnvelope struct {
 	AppID string `dynamodbav:"app" json:"app"`
 
 	ToAddress string `dynamodbav:"to" json:"to"`
+
+	ToName string `dynamodbav:"to_name" json:"to_name"`
 
 	ToInternalID string `dynamodbav:"toInternal" json:"toInternal"`
 

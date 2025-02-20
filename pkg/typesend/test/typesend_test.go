@@ -30,6 +30,7 @@ func TestStubbed_Send(t *testing.T) {
 	// Build a TypeSendTo instance.
 	to := typesend_schemas.TypeSendTo{
 		ToAddress:    "test.dsad+test@example.com",
+		ToName:       "Kenton Vizdos",
 		ToInternalID: "internal-123",
 		// Leave MessageGroupID empty so that Send() generates one.
 	}
@@ -56,6 +57,7 @@ func TestStubbed_Send(t *testing.T) {
 	envelope := items[0]
 	assert.Equal(t, "test-app", envelope.AppID)
 	assert.Equal(t, to.ToAddress, envelope.ToAddress)
+	assert.Equal(t, to.ToName, envelope.ToName)
 	assert.Equal(t, to.ToInternalID, envelope.ToInternalID)
 	assert.Equal(t, sendAt, envelope.ScheduledFor)
 	assert.Equal(t, typesend_schemas.TypeSendStatus_UNSENT, envelope.Status)

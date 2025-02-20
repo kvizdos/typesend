@@ -38,6 +38,7 @@ func (t *TypeSend) Send(to typesend_schemas.TypeSendTo, variables typesend_schem
 		AppID:          t.AppID,
 		ScheduledFor:   sendAt,
 		ToAddress:      to.ToAddress,
+		ToName:         to.ToName,
 		ToInternalID:   to.ToInternalID,
 		MessageGroupID: to.MessageGroupID,
 		TemplateID:     variables.GetTemplateID(),
