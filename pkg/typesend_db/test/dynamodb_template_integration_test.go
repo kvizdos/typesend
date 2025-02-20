@@ -13,7 +13,7 @@ func TestIntegration_InsertTemplate(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	client, container, err := testutils.SetupDynamoDBLocalSession(context.Background())
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
 		return
 	}
@@ -35,7 +35,7 @@ func TestIntegration_GetTemplateByExists(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	client, container, err := testutils.SetupDynamoDBLocalSession(context.Background())
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
 		return
 	}
@@ -62,7 +62,7 @@ func TestIntegration_GetTemplateByTenantDoesNotExistButBaseDoes(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	client, container, err := testutils.SetupDynamoDBLocalSession(context.Background())
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
 		return
 	}
@@ -90,7 +90,7 @@ func TestIntegration_GetTemplateByTenantDoesExist(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	client, container, err := testutils.SetupDynamoDBLocalSession(context.Background())
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
 		return
 	}
@@ -123,7 +123,7 @@ func TestIntegration_GetTemplateByDoesNotExist(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	client, container, err := testutils.SetupDynamoDBLocalSession(context.Background())
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
 		return
 	}

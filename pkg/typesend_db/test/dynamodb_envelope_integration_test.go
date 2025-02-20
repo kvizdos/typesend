@@ -19,7 +19,7 @@ func TestIntegration_Insert(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	client, container, err := testutils.SetupDynamoDBLocalSession(context.Background())
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
 		return
 	}
@@ -58,7 +58,7 @@ func TestIntegration_GetMessagesReadyToSend(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup DynamoDB Local session using our testutils helper.
-	client, container, err := testutils.SetupDynamoDBLocalSession(ctx)
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
 		return
 	}
@@ -158,7 +158,7 @@ func TestIntegration_GetEnvelopeByID(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup DynamoDB Local session using our testutils helper.
-	client, container, err := testutils.SetupDynamoDBLocalSession(ctx)
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup should not return error"); !ok {
 		return
 	}
@@ -209,7 +209,7 @@ func TestIntegration_GetEnvelopeByIDNotFound(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup DynamoDB Local session using our testutils helper.
-	client, container, err := testutils.SetupDynamoDBLocalSession(ctx)
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup should not return error"); !ok {
 		return
 	}
@@ -236,7 +236,7 @@ func TestIntegration_UpdateEnvelopeStatus(t *testing.T) {
 	ctx := context.Background()
 
 	// Setup DynamoDB Local session using our testutils helper.
-	client, container, err := testutils.SetupDynamoDBLocalSession(ctx)
+	client, container, err := testutils.SetupDynamoDBLocalSession(t, context.Background())
 	if ok := assert.NoError(t, err, "DynamoDB Setup Should Not Return Error"); !ok {
 		return
 	}

@@ -27,6 +27,10 @@ func (t *TestLogger) Warnf(msg string, args ...any) {
 	t.Test.Errorf("Warn: %s", fmt.Sprintf(msg, args...))
 	return
 }
+func (t *TestLogger) Printf(msg string, args ...any) {
+	t.Test.Logf(msg, args...)
+	return
+}
 func (l *TestLogger) Errorf(format string, v ...any) {
 	l.mutex.Lock()
 	if l.ErrorLogs == nil {
