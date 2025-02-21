@@ -15,6 +15,8 @@ type TestDatabase struct {
 	connected bool
 	items     []*typesend_schemas.TypeSendEnvelope
 	templates []*typesend_schemas.TypeSendTemplate
+
+	LiveModeChan chan *typesend_schemas.TypeSendEnvelope
 }
 
 // Connect simply sets the database as connected.
@@ -60,6 +62,9 @@ func (db *TestDatabase) Insert(envelope *typesend_schemas.TypeSendEnvelope) erro
 	}
 
 	db.items = append(db.items, envelope)
+	if db.LiveModeChan != nil {
+		db.LiveModeChan <- envelope
+	}
 	return nil
 }
 

@@ -50,7 +50,9 @@ func (s SendGridProvider) Deliver(e *typesend_schemas.TypeSendEnvelope, filledTe
 	return nil
 }
 
-func NewSendGridProvider(apiKey string) SendGridEmailClient {
+func NewSendGridProvider(apiKey string) *SendGridProvider {
 	client := sendgrid.NewSendClient(apiKey)
-	return client
+	return &SendGridProvider{
+		Client: client,
+	}
 }

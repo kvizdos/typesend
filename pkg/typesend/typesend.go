@@ -13,6 +13,11 @@ type TypeSend struct {
 	AppID string
 
 	Database typesend_db.TypeSendDatabase
+
+	// All envelopes will be sent NOW.
+	// Used in Live Mode for testing.
+	LiveMode_ForceNow bool
+	LiveMode_Logger   typesend_schemas.Logger
 }
 
 func (t *TypeSend) Send(to typesend_schemas.TypeSendTo, variables typesend_schemas.TypeSendVariableInterface, sendAt time.Time) (string, error) {
@@ -27,6 +32,11 @@ func (t *TypeSend) Send(to typesend_schemas.TypeSendTo, variables typesend_schem
 	} else {
 		if sendAt.Location() != time.UTC {
 			return "", TypeSendError_UTC_MISMATCH
+		}
+
+		if t.LiveMode_ForceNow {
+			t.LiveMode_Logger.Infof("Envelope to %s scheduled to be sent in %s", to.ToAddress, sendAt.Sub(time.Now()))
+			sendAt = time.Now().UTC()
 		}
 	}
 

@@ -11,9 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/google/uuid"
 	"github.com/kvizdos/typesend/cmd/consume_messages/consume_messages_handler"
+	providers_testing "github.com/kvizdos/typesend/internal/providers/tester"
 	"github.com/kvizdos/typesend/pkg/testutils"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,22 +45,35 @@ func TestConsumerSuccess(t *testing.T) {
 	err := testDb.Connect(context.Background())
 	assert.NoError(t, err)
 
-	testLogger := &testutils.TestLogger{
-		Test:  t,
-		DoLog: true,
-	}
+	logger := logrus.New()
+
+	provider := providers_testing.NewTestingProvider()
 
 	handler := &consume_messages_handler.ConsumeMessageHandler{
 		AWSRegion: "us-east-1",
 		Project:   "test",
 		Env:       "testing",
 		Deps: &consume_messages_handler.ConsumeMessageHandlerDependencies{
-			DB:     testDb,
-			Logger: testLogger,
+			DB:       testDb,
+			Logger:   logger,
+			Provider: provider,
 		},
 	}
 
-	_, tev1 := createTestEvent()
+	env, tev1 := createTestEvent()
+	err = testDb.Insert(&env)
+	assert.NoError(t, err)
+
+	err = testDb.InsertTemplate(nil, &typesend_schemas.TypeSendTemplate{
+		TemplateID:  env.TemplateID,
+		TenantID:    env.TenantID,
+		Content:     "Hello world",
+		Subject:     "Blahaj",
+		FromAddress: "example@demo.com",
+		FromName:    "Kenton Vizdos",
+	})
+
+	assert.NoError(t, err)
 	failedMsgs, err := handler.Handle(context.Background(), events.SQSEvent{
 		Records: []events.SQSMessage{
 			tev1,

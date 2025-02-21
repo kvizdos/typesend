@@ -9,7 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	typequeue "github.com/kvizdos/typequeue/pkg"
 	typequeue_lambda "github.com/kvizdos/typequeue/pkg/lambda"
-	"github.com/kvizdos/typesend/internal"
+	"github.com/kvizdos/typesend/internal/consume_messages"
+	"github.com/kvizdos/typesend/internal/providers"
 	"github.com/kvizdos/typesend/internal/sentry"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
@@ -18,8 +19,9 @@ import (
 
 // ConsumeMessageHandlerDependencies holds all external dependencies.
 type ConsumeMessageHandlerDependencies struct {
-	Logger typesend_schemas.Logger
-	DB     typesend_db.TypeSendDatabase
+	Logger   typesend_schemas.Logger
+	DB       typesend_db.TypeSendDatabase
+	Provider providers.TypeSendProvider
 }
 
 // ConsumeMessageHandler contains the config and dependency references.
@@ -76,7 +78,21 @@ func (cmh *ConsumeMessageHandler) Handle(ctx context.Context, sqsEvent events.SQ
 		SQSEvents: sqsEvent,
 	}
 	consumer.Consume(context.Background(), typequeue.ConsumerSQSOptions{}, func(envelope *typesend_schemas.TypeSendEnvelope) error {
-		internal.ProtectedInfoLogger(cmh.Deps.Logger, "%+v\n", envelope)
+		l := cmh.Deps.Logger.(*logrus.Logger)
+		logger := l.WithFields(logrus.Fields{
+			"trace-id":    *envelope.GetTraceID(),
+			"envelope-id": envelope.ID,
+		})
+		err := consume_messages.DeliverMessage(&consume_messages.DeliverMessageOptions{
+			Logger:   logger,
+			Database: cmh.Deps.DB,
+			Provider: cmh.Deps.Provider,
+		}, envelope)
+
+		if err != nil {
+			logger.Errorf("Failed to deliver message: %s", err.Error())
+			return err
+		}
 
 		return nil
 	})

@@ -62,6 +62,8 @@ github.com/kvizdos/typequeue v1.0.0 h1:RX8MqsvGm3KP1gUYlyE2ZrEaL8GMdxQKYucjkLrN0
 github.com/kvizdos/typequeue v1.0.0/go.mod h1:fNtHCRZc1SHqib02CWhl2jCWLIMRTdZ2K7Gqu98GuhA=
 github.com/kvizdos/typequeue v1.1.0 h1:6Zjl875/WhVlm4cMRsFfVUunaPRND3WtQXuEUkWFJag=
 github.com/kvizdos/typequeue v1.1.0/go.mod h1:fNtHCRZc1SHqib02CWhl2jCWLIMRTdZ2K7Gqu98GuhA=
+github.com/kvizdos/typequeue v1.2.0 h1:uigaBLG2Ftf5PuWJ2+isNwmpCUnRfOoDfIaGH2HSP40=
+github.com/kvizdos/typequeue v1.2.0/go.mod h1:fNtHCRZc1SHqib02CWhl2jCWLIMRTdZ2K7Gqu98GuhA=
 github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 h1:6E+4a0GO5zZEnZ81pIr0yLvtUWk2if982qA3F3QD6H4=
 github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0/go.mod h1:zJYVVT2jmtg6P3p1VtQj7WsuWi/y4VnjVBn7F8KPB3I=
 github.com/magiconair/properties v1.8.7 h1:IeQXZAiQcpL9mgcAe1Nu6cX9LLw6ExEHKjN0VQdvPDY=
