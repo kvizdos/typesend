@@ -18,6 +18,7 @@ import (
 	providers_testing "github.com/kvizdos/typesend/internal/providers/tester"
 	"github.com/kvizdos/typesend/pkg/typesend"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
+	typesend_metrics_testing "github.com/kvizdos/typesend/pkg/typesend_metrics/testing"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
 )
 
@@ -32,6 +33,10 @@ func StartTypeSendLive(ctx context.Context, logger typesend_schemas.Logger, appI
 		logger.Infof("✅ TypeSend Live Mode using Logger")
 		provider = providers_testing.NewLoggingProvider(logger)
 	}
+
+	loggingMetrics, _ := typesend_metrics_testing.NewLoggingProvider("demo", "demo", logger)
+
+	provider.SetMetricProvider(loggingMetrics)
 
 	msgsChan := make(chan *typesend_schemas.TypeSendEnvelope)
 	db := &typesend_db.TestDatabase{
@@ -60,6 +65,7 @@ func StartTypeSendLive(ctx context.Context, logger typesend_schemas.Logger, appI
 	ts := &typesend.TypeSend{
 		AppID:             appID,
 		Database:          db,
+		MetricProvider:    loggingMetrics,
 		LiveMode_ForceNow: true,
 		LiveMode_Logger:   logger,
 	}

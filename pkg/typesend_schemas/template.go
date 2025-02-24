@@ -3,6 +3,8 @@ package typesend_schemas
 import (
 	"bytes"
 	"html/template"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 type TypeSendTemplate struct {
@@ -27,7 +29,7 @@ func (t *TypeSendTemplate) Fill(vars map[string]interface{}) error {
 }
 
 func (t *TypeSendTemplate) fillContent(vars map[string]interface{}) error {
-	tmpl, err := template.New("content").Parse(t.Content)
+	tmpl, err := template.New("content").Funcs(sprig.FuncMap()).Parse(t.Content)
 	if err != nil {
 		return err
 	}
@@ -42,7 +44,7 @@ func (t *TypeSendTemplate) fillContent(vars map[string]interface{}) error {
 }
 
 func (t *TypeSendTemplate) fillSubject(vars map[string]interface{}) error {
-	tmpl, err := template.New("content").Parse(t.Subject)
+	tmpl, err := template.New("content").Funcs(sprig.FuncMap()).Parse(t.Subject)
 	if err != nil {
 		return err
 	}

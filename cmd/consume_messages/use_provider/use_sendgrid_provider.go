@@ -14,7 +14,7 @@ func GetProvider() providers.TypeSendProvider {
 		panic("Missing TYPESEND_SENDGRID_KEY env")
 	}
 	client := sendgrid.NewSendClient(sendgridAPIKey)
-	return providers_sendgrid.SendGridProvider{
+	return &providers_sendgrid.SendGridProvider{
 		Client: client,
 	}
 }

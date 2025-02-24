@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kvizdos/typesend/pkg/typesend_db"
+	"github.com/kvizdos/typesend/pkg/typesend_metrics"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
 )
 
@@ -13,6 +14,8 @@ type TypeSend struct {
 	AppID string
 
 	Database typesend_db.TypeSendDatabase
+
+	MetricProvider typesend_metrics.MetricsProvider
 
 	// All envelopes will be sent NOW.
 	// Used in Live Mode for testing.
@@ -61,6 +64,14 @@ func (t *TypeSend) Send(to typesend_schemas.TypeSendTo, variables typesend_schem
 		ID:             ID,
 		Status:         typesend_schemas.TypeSendStatus_UNSENT,
 	})
+
+	if t.MetricProvider != nil {
+		t.MetricProvider.SendEvent(&typesend_metrics.Metric{
+			AppName:    t.AppID,
+			TemplateID: ID,
+			TenantID:   ID,
+		})
+	}
 
 	return ID, err
 }

@@ -3,6 +3,7 @@ package providers_testing
 import (
 	"sync"
 
+	"github.com/kvizdos/typesend/pkg/typesend_metrics"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
 )
 
@@ -25,6 +26,9 @@ func NewTestingProvider() *TestingProvider {
 	return &TestingProvider{
 		messages: make(map[string]*TestMessage),
 	}
+}
+
+func (s *TestingProvider) SetMetricProvider(_ typesend_metrics.MetricsProvider) {
 }
 
 // Deliver stores the provided envelope internally.

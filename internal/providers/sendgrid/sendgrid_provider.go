@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/kvizdos/typesend/pkg/typesend_metrics"
 	"github.com/kvizdos/typesend/pkg/typesend_schemas"
 	"github.com/sendgrid/rest"
 	"github.com/sendgrid/sendgrid-go"
@@ -15,15 +16,28 @@ type SendGridEmailClient interface {
 }
 
 type SendGridProvider struct {
-	Client SendGridEmailClient
+	Client  SendGridEmailClient
+	Metrics typesend_metrics.MetricsProvider
 }
 
 func (s SendGridProvider) GetProviderName() string {
 	return "SendGrid"
 }
 
+func (s *SendGridProvider) SetMetricProvider(to typesend_metrics.MetricsProvider) {
+	s.Metrics = to
+}
+
 func (s SendGridProvider) Deliver(e *typesend_schemas.TypeSendEnvelope, filledTemplate *typesend_schemas.TypeSendTemplate) error {
 	if s.Client == nil {
+		if s.Metrics != nil {
+			s.Metrics.DeliverEvent(&typesend_metrics.Metric{
+				AppName:    e.AppID,
+				TemplateID: e.TemplateID,
+				TenantID:   e.TenantID,
+				Success:    false,
+			})
+		}
 		return fmt.Errorf("requires client")
 	}
 
@@ -40,11 +54,36 @@ func (s SendGridProvider) Deliver(e *typesend_schemas.TypeSendEnvelope, filledTe
 
 	response, err := s.Client.Send(message)
 	if err != nil {
+		if s.Metrics != nil {
+			s.Metrics.DeliverEvent(&typesend_metrics.Metric{
+				AppName:    e.AppID,
+				TemplateID: e.TemplateID,
+				TenantID:   e.TenantID,
+				Success:    false,
+			})
+		}
 		return err
 	}
 
 	if response.StatusCode != http.StatusAccepted {
+		if s.Metrics != nil {
+			s.Metrics.DeliverEvent(&typesend_metrics.Metric{
+				AppName:    e.AppID,
+				TemplateID: e.TemplateID,
+				TenantID:   e.TenantID,
+				Success:    false,
+			})
+		}
 		return fmt.Errorf("sendgrid status code not Accepted (%d): %s", response.StatusCode, response.Body)
+	}
+
+	if s.Metrics != nil {
+		s.Metrics.DeliverEvent(&typesend_metrics.Metric{
+			AppName:    e.AppID,
+			TemplateID: e.TemplateID,
+			TenantID:   e.TenantID,
+			Success:    true,
+		})
 	}
 
 	return nil
