@@ -68,8 +68,8 @@ func (t *TypeSend) Send(to typesend_schemas.TypeSendTo, variables typesend_schem
 	if t.MetricProvider != nil {
 		t.MetricProvider.SendEvent(&typesend_metrics.Metric{
 			AppName:    t.AppID,
-			TemplateID: ID,
-			TenantID:   ID,
+			TemplateID: variables.GetTemplateID(),
+			TenantID:   to.ToTenantID,
 		})
 	}
 

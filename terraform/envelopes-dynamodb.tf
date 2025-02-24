@@ -52,10 +52,4 @@ resource "aws_dynamodb_table" "typesend_envelopes" {
     hash_key        = "toInternal"
     projection_type = "ALL"
   }
-
-  global_secondary_index {
-    name            = "ref-index"
-    hash_key        = "ref"
-    projection_type = "ALL"
-  }
 }
